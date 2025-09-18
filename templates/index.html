@@ -1,18 +1,310 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Boston House Estimator - Mounika</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            padding: 30px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .form-container {
+            padding: 40px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #4facfe;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .input-group input:valid {
+            border-color: #28a745;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .submit-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .prediction-result {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            border-radius: 15px;
+            text-align: center;
+            color: #2c5aa0;
+            font-size: 1.3rem;
+            font-weight: 600;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .feature-info {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .form-container {
+                padding: 20px;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .loading {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4facfe;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to Mounika's Boston House Estimator 🏠</h1>
-    <form action="/predict" method="post">
-        {% for i in range(13) %}
-        <input type="text" name="feature{{i}}" placeholder="Enter value {{i+1}}" required><br>
-        {% endfor %}
-        <input type="submit" value="Estimate Price">
-    </form>
-    {% if prediction_text %}
-        <h2>{{ prediction_text }}</h2>
-    {% endif %}
+    <div class="container">
+        <div class="header">
+            <h1>🏠 Boston House Estimator</h1>
+            <p>Powered by Mounika's ML Model</p>
+        </div>
+        
+        <div class="form-container">
+            <form action="/predict" method="post" id="predictionForm">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label for="feature0">Crime Rate (CRIM)</label>
+                        <input type="number" step="any" name="feature0" id="feature0" placeholder="0.00632" required>
+                        <div class="feature-info">Per capita crime rate by town</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="feature1">Zoned Land (ZN)</label>
+                        <input type="number" step="any" name="feature1" id="feature1" placeholder="18.0" required>
+                        <div class="feature-info">% of residential land zoned for lots over 25,000 sq.ft.</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="feature2">Industry (INDUS)</label>
+                        <input type="number" step="any" name="feature2" id="feature2" placeholder="2.31" required>
+                        <div class="feature-info">% of non-retail business acres per town</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="feature3">Charles River (CHAS)</label>
+                        <input type="number" step="any" name="feature3" id="feature3" placeholder="0" required>
+                        <div class="feature-info">Charles River dummy variable (1 if tract bounds river; 0 otherwise)</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="feature4">Nitric Oxides (NOX)</label>
+                        <input type="number" step="any" name="feature4" id="feature4" placeholder="0.538" required>
+                        <div class="feature-info">Nitric oxides concentration (parts per 10 million)</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="feature5">Rooms (RM)</label>
+                        <input type="number" step="any" name="feature5" id="feature5" placeholder="6.575" required>
+                        <div class="feature-info">Average number of rooms per dwelling</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="feature6">Age (AGE)</label>
+                        <input type="number" step="any" name="feature6" id="feature6" placeholder="65.2" required>
+                        <div class="feature-info">% of owner-occupied units built prior to 1940</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="feature7">Distance (DIS)</label>
+                        <input type="number" step="any" name="feature7" id="feature7" placeholder="4.0900" required>
+                        <div class="feature-info">Weighted distances to employment centers</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="feature8">Radial Highways (RAD)</label>
+                        <input type="number" step="any" name="feature8" id="feature8" placeholder="1" required>
+                        <div class="feature-info">Index of accessibility to radial highways</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="feature9">Tax Rate (TAX)</label>
+                        <input type="number" step="any" name="feature9" id="feature9" placeholder="296" required>
+                        <div class="feature-info">Full-value property-tax rate per $10,000</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="feature10">Pupil-Teacher Ratio (PTRATIO)</label>
+                        <input type="number" step="any" name="feature10" id="feature10" placeholder="15.3" required>
+                        <div class="feature-info">Pupil-teacher ratio by town</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="feature11">Black Population (B)</label>
+                        <input type="number" step="any" name="feature11" id="feature11" placeholder="396.90" required>
+                        <div class="feature-info">1000(Bk - 0.63)^2 where Bk is the proportion of blacks by town</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="feature12">Lower Status (LSTAT)</label>
+                        <input type="number" step="any" name="feature12" id="feature12" placeholder="4.98" required>
+                        <div class="feature-info">% lower status of the population</div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-btn">
+                    Estimate House Price 🏡
+                </button>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Calculating your house price...</p>
+                </div>
+            </form>
+            
+            {% if prediction_text %}
+                <div class="prediction-result">
+                    {{ prediction_text }}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('predictionForm').addEventListener('submit', function() {
+            document.getElementById('loading').style.display = 'block';
+        });
+
+        // Add some interactive feedback
+        const inputs = document.querySelectorAll('input[type="number"]');
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                if (this.value) {
+                    this.style.borderColor = '#28a745';
+                } else {
+                    this.style.borderColor = '#e1e5e9';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
