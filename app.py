@@ -16,5 +16,5 @@ def predict():
     prediction = model.predict(final)
     return render_template('index.html', prediction_text=f'Mounika\'s ML Prediction: ${round(prediction[0], 2)}')
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # ✅ Fixed the underscores
     app.run(debug=True)
